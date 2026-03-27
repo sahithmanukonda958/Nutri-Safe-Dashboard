@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: NutriSafe IoT Food Spoilage Detection API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: sensor
+    description: Sensor data operations
+  - name: settings
+    description: Threshold settings
 paths:
   /healthz:
     get:
@@ -24,6 +27,111 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /sensor/reading:
+    post:
+      operationId: postSensorReading
+      tags: [sensor]
+      summary: Receive sensor reading from ESP32
+      description: Accepts a sensor reading from the ESP32 device via HTTP POST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SensorReadingInput"
+      responses:
+        "201":
+          description: Reading saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorReading"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sensor/latest:
+    get:
+      operationId: getLatestReading
+      tags: [sensor]
+      summary: Get the most recent sensor reading
+      responses:
+        "200":
+          description: Latest reading
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorReading"
+        "404":
+          description: No readings found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sensor/history:
+    get:
+      operationId: getSensorHistory
+      tags: [sensor]
+      summary: Get sensor readings history
+      parameters:
+        - name: hours
+          in: query
+          description: Number of hours of history to fetch (default 24)
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of sensor readings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SensorReading"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get current threshold settings
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update threshold settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +142,134 @@ components:
       required:
         - status
 
+    SensorReadingInput:
+      type: object
+      properties:
+        methane:
+          type: number
+          description: Methane/gas level in ppm
+        ethanol:
+          type: number
+          description: Ethanol level in ppm
+        temperature:
+          type: number
+          description: Temperature in Celsius
+        humidity:
+          type: number
+          description: Relative humidity percentage
+        deviceId:
+          type: string
+          description: Device identifier
+      required:
+        - methane
+        - ethanol
+        - temperature
+        - humidity
+
+    SensorReading:
+      type: object
+      properties:
+        id:
+          type: integer
+        methane:
+          type: number
+        ethanol:
+          type: number
+        temperature:
+          type: number
+        humidity:
+          type: number
+        status:
+          type: string
+          enum: [fresh, warning, spoiled]
+        deviceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - id
+        - methane
+        - ethanol
+        - temperature
+        - humidity
+        - status
+        - timestamp
+
+    Settings:
+      type: object
+      properties:
+        id:
+          type: integer
+        methaneWarning:
+          type: number
+          description: Methane ppm warning threshold
+        methaneSpoiled:
+          type: number
+          description: Methane ppm spoiled threshold
+        ethanolWarning:
+          type: number
+          description: Ethanol ppm warning threshold
+        ethanolSpoiled:
+          type: number
+          description: Ethanol ppm spoiled threshold
+        temperatureWarning:
+          type: number
+          description: Temperature warning threshold (Celsius)
+        temperatureSpoiled:
+          type: number
+          description: Temperature spoiled threshold (Celsius)
+        humidityWarning:
+          type: number
+          description: Humidity warning threshold (%)
+        humiditySpoiled:
+          type: number
+          description: Humidity spoiled threshold (%)
+      required:
+        - id
+        - methaneWarning
+        - methaneSpoiled
+        - ethanolWarning
+        - ethanolSpoiled
+        - temperatureWarning
+        - temperatureSpoiled
+        - humidityWarning
+        - humiditySpoiled
+
+    SettingsInput:
+      type: object
+      properties:
+        methaneWarning:
+          type: number
+        methaneSpoiled:
+          type: number
+        ethanolWarning:
+          type: number
+        ethanolSpoiled:
+          type: number
+        temperatureWarning:
+          type: number
+        temperatureSpoiled:
+          type: number
+        humidityWarning:
+          type: number
+        humiditySpoiled:
+          type: number
+      required:
+        - methaneWarning
+        - methaneSpoiled
+        - ethanolWarning
+        - ethanolSpoiled
+        - temperatureWarning
+        - temperatureSpoiled
+        - humidityWarning
+        - humiditySpoiled
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

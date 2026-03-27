@@ -1,0 +1,18 @@
+packages:
+  "recharts": "For beautiful, responsive real-time data visualization charts"
+  "framer-motion": "For smooth page transitions and the pulsing status indicator"
+  "date-fns": "For formatting timestamps on the history charts"
+  "react-hook-form": "For the calibration settings form"
+  "@hookform/resolvers": "For Zod validation integration with react-hook-form"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility function to efficiently merge Tailwind CSS classes"
+
+images:
+  - path: "artifacts/nutrisafe/public/images/logo.png"
+    description: "A minimal, modern geometric logo for a food safety app called NutriSafe. Uses soft emerald greens and slate colors. Abstract leaf or shield motif. Transparent background."
+    aspect_ratio: "1:1"
+
+notes:
+  - Using generated hooks from @workspace/api-client-react
+  - Dashboard polling set to 5 seconds
+  - Dark mode supported but defaults to a fresh, light 'health' theme
