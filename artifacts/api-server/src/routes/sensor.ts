@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { sensorReadingsTable, settingsTable } from "@workspace/db/schema";
 import { PostSensorReadingBody } from "@workspace/api-zod";
@@ -39,7 +39,7 @@ async function getOrCreateSettings() {
   return created;
 }
 
-router.post("/reading", async (req, res) => {
+router.post("/reading", async (req: Request, res: Response) => {
   const parsed = PostSensorReadingBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid sensor data" });
@@ -58,7 +58,7 @@ router.post("/reading", async (req, res) => {
   res.status(201).json(reading);
 });
 
-router.get("/latest", async (_req, res) => {
+router.get("/latest", async (_req: Request, res: Response) => {
   const readings = await db
     .select()
     .from(sensorReadingsTable)
@@ -73,7 +73,7 @@ router.get("/latest", async (_req, res) => {
   res.json(readings[0]);
 });
 
-router.get("/history", async (req, res) => {
+router.get("/history", async (req: Request, res: Response) => {
   const hours = Number(req.query.hours) || 24;
   const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 

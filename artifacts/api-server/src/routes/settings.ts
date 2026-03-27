@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { settingsTable } from "@workspace/db/schema";
 import { UpdateSettingsBody } from "@workspace/api-zod";
@@ -13,12 +13,12 @@ async function getOrCreateSettings() {
   return created;
 }
 
-router.get("/", async (_req, res) => {
+router.get("/", async (_req: Request, res: Response) => {
   const settings = await getOrCreateSettings();
   res.json(settings);
 });
 
-router.put("/", async (req, res) => {
+router.put("/", async (req: Request, res: Response) => {
   const parsed = UpdateSettingsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid settings data" });
